@@ -1,0 +1,83 @@
+#include "stdafx.h"
+
+
+#include "Connection.h"
+
+using namespace std;
+
+
+/*ARGC,ARGV - INTERFACE
+* 0 - NAME(СТАНДАРТНО)
+
+* argv[1] - DB_TYPE(argv[1] == "1":Postgre; argv[1] == "2":MySQL) 		
+		//DB_TYPE db_type = QNO_DB;
+		//DB_TYPE db_type = QPOSTGRE_SQL;
+		//DB_TYPE db_type = QMY_SQL;
+* argv[2] - CONNECTION STR
+* argv[3] - SQL REQUEST
+* THIS PRG RETURNS ASS MASSIVE AS A MSG
+*/
+
+
+int main(int argc, char **argv)//string to connect to db
+{
+/******************************************************************************
+* LOGIC: create new connection argc, argv & SHOW COMMAND LINE PARAMETERS
+*/
+	
+	static const char *sql = argv[3];
+	static const char *argv1[2];
+	static const char argc1 = 2;
+	argv1[0] = argv[0];
+	argv1[1] = argv[2];//its goes to Connection class
+
+	cout << "COMMAND LINE PARAMETERS:\n";
+	for (int i = 0; i < argc; ++i)
+	{
+		std::cout << i << ")" << argv[i] <<"\n";
+	}
+
+/********************************************************************************
+* INIT BLOCK CREATE ALL VARIABLES FOR CONNECTING
+* CLASS CONNECTION ARE NEEDED FOR INCAPSULATED MY LOGIC 
+* CLASSINTERFACE DBAAS ARE NEEDED FOR INCAPSULATED API LOGIC FOR CONCREATE DB
+*/
+/*INIT BLOCK*/
+	Connection Service;//ALL LOGIC OF THIS MODULE
+
+	Service.setDBaaS_connection((const int)argc, (const char**)argv);//SET public DBaaS in Connection PARAMETERS FROM COMMAND LINE OR OTHER DATA STR 
+	/*now the public variable DDaaS is a smart_ptr provider for concreate DB interface use -> and use it like a pointer*/
+	
+
+	if (Service.DBaaS != nullptr)//NEED TO CHECK THAT CONNECTION IS VALID
+		{
+			std::cout << "\t\t\t\t\t\tConnected to: "<< Service.DBaaS->Get_name_of_db_interface()<< "\n";
+
+
+/**********************************************************************************************
+* BLOK OF TRANSACTIONS CONNECTION IS ALREADY DONE 
+*/
+			if ( !(Service.DBaaS->Connect(argc1, argv1)) )
+				{
+					std::cout << "\nDB is connected and ready to work\n";
+					Service.DBaaS->Transaction(1, &sql);//??????			 
+					Service.DBaaS->Disconnect(); /*CLOSE the connection*/
+				}
+			else
+				{
+					std::cout << "\nDB connection is failed. Error\n";
+				}
+		}
+	else
+		{	
+			std::cout << "Service.DBaaS is nullptr. no db service avalible\n";
+		}
+
+
+
+
+
+	Service.DBaaS_shdown();
+	system("pause");
+	return 0;
+}
